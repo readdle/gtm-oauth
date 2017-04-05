@@ -79,7 +79,10 @@
 #endif
 
 #import "GTMOAuthAuthentication.h"
+#if !GTM_USE_SESSION_FETCHER
 #import "GTMHTTPFetchHistory.h" // for GTMCookieStorage
+#endif
+
 
 @class GTMOAuthSignIn;
 
@@ -99,7 +102,7 @@
   NSURLRequest *initialRequest_;
 
   // local storage for WebKit cookies so they're not shared with Safari
-  GTMCookieStorage *cookieStorage_;
+  GTMBridgeCookieStorage *cookieStorage_;
 
   // the user we're calling back
   //

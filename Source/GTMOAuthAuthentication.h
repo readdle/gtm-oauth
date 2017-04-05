@@ -34,7 +34,35 @@
   #import "GTLDefines.h"
 #endif
 
-#import "GTMHTTPFetcher.h"
+#ifndef GTM_OAUTH_USE_FRAMEWORK_IMPORTS
+    #define GTM_OAUTH_USE_FRAMEWORK_IMPORTS 0
+#endif
+
+#ifndef GTM_USE_SESSION_FETCHER
+    #define GTM_USE_SESSION_FETCHER 0
+#endif
+
+#if GTM_USE_SESSION_FETCHER
+  #if GTM_OAUTH_USE_FRAMEWORK_IMPORTS
+    #import <GTMSessionFetcher/GTMSessionFetcher.h>
+  #else
+    #import "GTMSessionFetcher.h"
+  #endif  // GTM_OAUTH_USE_FRAMEWORK_IMPORTS
+#else
+  #if GTM_OAUTH_USE_FRAMEWORK_IMPORTS
+    #error GTMHTTPFetcher lacks a framework build
+  #else
+    #import "GTMHTTPFetcher.h"
+  #endif  // GTM_OAUTH_USE_FRAMEWORK_IMPORTS
+#endif  // GTM_USE_SESSION_FETCHER
+
+#define GTMOAuthFetcher GTMBridgeFetcher
+#define GTMOAuthFetcherService GTMBridgeFetcherService
+#define GTMOAuthFetcherServiceProtocol GTMBridgeFetcherServiceProtocol
+#define GTMOAuthAssertValidSelector GTMBridgeAssertValidSelector
+#define GTMOAuthCookieStorage GTMBridgeCookieStorage
+#define kGTMOAuthFetcherStatusDomain kGTMBridgeFetcherStatusDomain
+#define kGTMOAuthStatusBadRequest kGTMBridgeFetcherStatusBadRequest
 
 #undef _EXTERN
 #undef _INITIALIZE_AS
