@@ -38,7 +38,7 @@
 - (NSURLRequest *)addCookiesToRequest:(NSURLRequest *)request;
 @end
 
-const char *kKeychainAccountName = "OAuth";
+static const char *kKeychainAccountName = "OAuth";
 
 @implementation GTMOAuthWindowController
 
@@ -109,6 +109,9 @@ const char *kKeychainAccountName = "OAuth";
 }
 
 - (void)dealloc {
+  [webView_ setResourceLoadDelegate:nil];
+  [webView_ setPolicyDelegate:nil];
+  
   [signIn_ release];
   [initialRequest_ release];
   [cookieStorage_ release];
@@ -270,8 +273,10 @@ const char *kKeychainAccountName = "OAuth";
 - (void)destroyWindow {
   // no request; close the window (but not immediately, in case
   // we're called in response to some window event)
-  [[self webView] stopLoading:nil];
-
+  [self.webView performSelectorOnMainThread:@selector(stopLoading:)
+                                 withObject:nil
+                              waitUntilDone:NO];
+  
   if (sheetModalForWindow_) {
     [NSApp endSheet:[self window]];
   } else {
