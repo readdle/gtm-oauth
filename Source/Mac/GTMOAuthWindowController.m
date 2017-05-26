@@ -103,7 +103,7 @@ static const char *kKeychainAccountName = "OAuth";
     [self setKeychainApplicationServiceName:keychainAppServiceName];
 
     // create local, temporary storage for WebKit cookies
-    cookieStorage_ = [[GTMCookieStorage alloc] init];
+    cookieStorage_ = [[GTMBridgeCookieStorage alloc] init];
   }
   return self;
 }
@@ -188,7 +188,7 @@ static const char *kKeychainAccountName = "OAuth";
                          delegate:(id)delegate
                  finishedSelector:(SEL)finishedSelector {
   // check the selector on debug builds
-  GTMAssertSelectorNilOrImplementedWithArgs(delegate, finishedSelector,
+  GTMBridgeAssertValidSelector(delegate, finishedSelector,
     @encode(GTMOAuthWindowController *), @encode(GTMOAuthAuthentication *),
     @encode(NSError *), 0);
 

@@ -49,7 +49,6 @@
 #endif
 
 #import "GTMOAuthAuthentication.h"
-#import "GTMHTTPFetcher.h"
 
 enum {
   // error code indicating that the window was prematurely closed
@@ -68,9 +67,9 @@ enum {
   SEL webRequestSelector_;
   SEL finishedSelector_;
 
-  id <GTMHTTPFetcherServiceProtocol> fetcherService_;
+  id <GTMOAuthFetcherServiceProtocol> fetcherService_; // WEAK
 
-  GTMHTTPFetcher *pendingFetcher_;
+  GTMOAuthFetcher *pendingFetcher_;
 
   SCNetworkReachabilityRef reachabilityRef_;
   NSTimer *networkLossTimer_;
@@ -90,7 +89,7 @@ enum {
 
 // Property for the optional fetcher service instance to be used to create
 // fetchers
-@property (nonatomic, retain) id <GTMHTTPFetcherServiceProtocol> fetcherService;
+@property (nonatomic, retain) id <GTMOAuthFetcherServiceProtocol> fetcherService;
 
 // The default timeout for an unreachable network during display of the
 // sign-in page is 30 seconds; set this to 0 to have no timeout

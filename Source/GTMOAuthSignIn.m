@@ -30,11 +30,11 @@ static const NSTimeInterval kDefaultNetworkLossTimeoutInterval = 30.0;
 
 - (void)startWebRequest;
 
-- (GTMHTTPFetcher *)pendingFetcher;
-- (void)setPendingFetcher:(GTMHTTPFetcher *)obj fetchType:(NSString *)fetchType;
+- (GTMOAuthFetcher *)pendingFetcher;
+- (void)setPendingFetcher:(GTMOAuthFetcher *)obj fetchType:(NSString *)fetchType;
 
-- (void)accessFetcher:(GTMHTTPFetcher *)fetcher finishedWithData:(NSData *)data error:(NSError *)error;
-- (void)requestFetcher:(GTMHTTPFetcher *)fetcher finishedWithData:(NSData *)data error:(NSError *)error;
+- (void)accessFetcher:(GTMOAuthFetcher *)fetcher finishedWithData:(NSData *)data error:(NSError *)error;
+- (void)requestFetcher:(GTMOAuthFetcher *)fetcher finishedWithData:(NSData *)data error:(NSError *)error;
 
 - (void)closeTheWindow;
 
@@ -65,9 +65,9 @@ static const NSTimeInterval kDefaultNetworkLossTimeoutInterval = 30.0;
             finishedSelector:(SEL)finishedSelector {
 
   // check the selectors on debug builds
-  GTMAssertSelectorNilOrImplementedWithArgs(delegate, webRequestSelector,
+  GTMBridgeAssertValidSelector(delegate, webRequestSelector,
     @encode(GTMOAuthSignIn *), @encode(NSURLRequest *), 0);
-  GTMAssertSelectorNilOrImplementedWithArgs(delegate, finishedSelector,
+  GTMBridgeAssertValidSelector(delegate, finishedSelector,
     @encode(GTMOAuthSignIn *), @encode(GTMOAuthAuthentication *),
     @encode(NSError *), 0);
 
@@ -108,13 +108,13 @@ static const NSTimeInterval kDefaultNetworkLossTimeoutInterval = 30.0;
 
 // utility method to create a fetcher, either from the fetcher service object
 // or from the class method
-- (GTMHTTPFetcher *)fetcherWithRequest:(NSMutableURLRequest *)request {
-  GTMHTTPFetcher *fetcher;
-  id <GTMHTTPFetcherServiceProtocol> fetcherService = self.fetcherService;
+- (GTMOAuthFetcher *)fetcherWithRequest:(NSMutableURLRequest *)request {
+  GTMOAuthFetcher *fetcher;
+  id <GTMOAuthFetcherServiceProtocol> fetcherService = self.fetcherService;
   if (fetcherService) {
     fetcher = [fetcherService fetcherWithRequest:request];
   } else {
-    fetcher = [GTMHTTPFetcher fetcherWithRequest:request];
+    fetcher = [GTMOAuthFetcher fetcherWithRequest:request];
   }
   return fetcher;
 }
@@ -148,18 +148,15 @@ static const NSTimeInterval kDefaultNetworkLossTimeoutInterval = 30.0;
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL_];
   [auth_ addRequestTokenHeaderToRequest:request];
 
-  GTMHTTPFetcher *fetcher = [self fetcherWithRequest:request];
+  GTMOAuthFetcher *fetcher = [self fetcherWithRequest:request];
   [fetcher setCommentWithFormat:@"request token for %@", [requestURL_ host]];
 
-  BOOL didStart = [fetcher beginFetchWithDelegate:self
-                                didFinishSelector:@selector(requestFetcher:finishedWithData:error:)];
-  if (didStart) {
-    [self setPendingFetcher:fetcher fetchType:kGTMOAuthFetchTypeRequest];
-  }
-  return didStart;
+  [fetcher beginFetchWithDelegate:self
+                didFinishSelector:@selector(requestFetcher:finishedWithData:error:)];
+  return YES;
 }
 
-- (void)requestFetcher:(GTMHTTPFetcher *)fetcher finishedWithData:(NSData *)data error:(NSError *)error {
+- (void)requestFetcher:(GTMOAuthFetcher *)fetcher finishedWithData:(NSData *)data error:(NSError *)error {
   [self setPendingFetcher:nil fetchType:nil];
   if (error) {
     [self invokeFinalCallbackWithError:error];
@@ -265,7 +262,7 @@ static const NSTimeInterval kDefaultNetworkLossTimeoutInterval = 30.0;
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:accessURL_];
   [auth_ addAccessTokenHeaderToRequest:request];
 
-  GTMHTTPFetcher *fetcher = [self fetcherWithRequest:request];
+  GTMOAuthFetcher *fetcher = [self fetcherWithRequest:request];
   [fetcher setCommentWithFormat:@"access token for %@", [accessURL_ host]];
 
   [fetcher beginFetchWithDelegate:self
@@ -277,7 +274,7 @@ static const NSTimeInterval kDefaultNetworkLossTimeoutInterval = 30.0;
   return YES;
 }
 
-- (void)accessFetcher:(GTMHTTPFetcher *)fetcher finishedWithData:(NSData *)data error:(NSError *)error {
+- (void)accessFetcher:(GTMOAuthFetcher *)fetcher finishedWithData:(NSData *)data error:(NSError *)error {
   [self setPendingFetcher:nil fetchType:nil];
 
   if (error) {
@@ -433,13 +430,13 @@ static void ReachabilityCallBack(SCNetworkReachabilityRef target,
 
 #pragma mark Accessors
 
-- (GTMHTTPFetcher *)pendingFetcher {
+- (GTMOAuthFetcher *)pendingFetcher {
   return pendingFetcher_;
 }
 
 
 
-- (void)setPendingFetcher:(GTMHTTPFetcher *)fetcher
+- (void)setPendingFetcher:(GTMOAuthFetcher *)fetcher
                 fetchType:(NSString *)fetchType {
   // send notification of the end of the pending fetcher
   //
